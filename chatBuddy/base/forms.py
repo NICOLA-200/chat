@@ -13,11 +13,11 @@ class RoomForm(ModelForm):
 class MyUserCreationForm(UserCreationForm):
     class Meta:
         model = User
-        fields = ['name', 'username', 'email', 'password1', 'password2']
+        fields = ['name', 'email', 'password1', 'password2']
 
 
 class UserForm(ModelForm):
     class Meta:
         model = User
-        fields = ['avatar', 'name', 'username', 'email', 'bio']
+        fields = ['name',  'email', 'bio']
 
