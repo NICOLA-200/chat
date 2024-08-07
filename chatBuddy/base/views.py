@@ -76,6 +76,35 @@ def loginPage(request):
     context = {'page': page}
     return render(request, 'base/login_register.html', context)
 
+def logoutUser(request):
+    logout(request)
+    return redirect('home')
+
+def registerPage(request):
+    form = MyUserCreationForm()
+
+    if request.method == 'POST':
+        form = MyUserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.username = user.username.lower()
+            user.save()
+            login(request, user)
+            return redirect('home')
+        else:
+            messages.error(request, 'An error occurred during registration')
+
+    return render(request, 'base/login_register.html', {'form': form})
+
+def userProfile(request, pk):
+    user = User.objects.get(id=pk)
+    rooms = user.room_set.all()
+    room_messages = user.message_set.all()
+    topics = Topic.objects.all()
+    context = {'user': user, 'rooms': rooms,
+               'room_messages': room_messages, 'topics': topics}
+    return render(request, 'base/profile.html', context)
+
 
 @login_required(login_url='login')
 def createRoom(request):
@@ -118,13 +147,17 @@ def updateRoom(request, pk):
     return render(request, 'base/room_form.html', context) 
 
 
-def deleteRoom(request,pk):
-     room = Room.objects.get(id=pk)
+@login_required(login_url='login')
+def deleteRoom(request, pk):
+    room = Room.objects.get(id=pk)
 
-     if request.method == 'POST':
-          room.delete()
-          return redirect('room ')
-     return render(request, 'base/delete.html', {'obj': room})
+    if request.user != room.host:
+        return HttpResponse('Your are not allowed here!!')
+
+    if request.method == 'POST':
+        room.delete()
+        return redirect('home')
+    return render(request, 'base/delete.html', {'obj': room})
 
 
 
